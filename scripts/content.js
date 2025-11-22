@@ -59,6 +59,7 @@ function manipulateDOM(){
     makeShowVideosButton();
     makePluginBarForVideo();
     closeShortsURL();
+    autoMuteAds();
 
     hideRecommended(recommendedHidden);
     hideComments(commentsHidden);
@@ -76,8 +77,6 @@ function hideShorts(){
     shortsSections.forEach(section => section.remove());
 
 }
-
-
 
 function makeShowVideosButton(){
     //if not main page do not do anything
@@ -118,11 +117,6 @@ function hideVideos(hide) {
     const contents = document.querySelectorAll('#contents ytd-rich-section-renderer');
     contents.forEach(section => section.style.display = hide ? 'none' : 'block');
 }
-
-
-
-
-
 
 function makePluginBarForVideo(){
     const container = document.querySelector("#above-the-fold")
@@ -257,5 +251,29 @@ function closeShortsURL() {
         chrome.runtime.sendMessage({
             type:"close_shorts",
         })
+    }
+}
+
+function autoMuteAds() {
+    const player = document.querySelector(".html5-video-player");
+    if (!player) return;
+
+    const isAd = player.classList.contains("ad-showing");
+    const video = document.querySelector("video");
+
+    if (!video) return;
+
+    if (isAd) {
+        // Mute when ad starts
+        if (!video.muted) {
+            video.muted = true;
+            console.log("Muted ad");
+        }
+    } else {
+        // Optional: unmute when ad ends
+        if (video.muted && document.URL != "https://www.youtube.com/") {
+            video.muted = false;
+            console.log("Unmuted");
+        }
     }
 }
