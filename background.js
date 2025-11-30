@@ -1,47 +1,20 @@
-//Works on the background like a server
-//Can not reach to DOM of page
+// Initialize time if it doesn't exist
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.get({youtubeTime: 0}, (data) => {
+        if (data.youtubeTime === undefined) {
+            chrome.storage.local.set({youtubeTime: 0});
+        }
+    });
+});
 
-//Store
-
-//Also called "Service Worker"
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-
-    const tabId = sender.tab?.id;  // <── GET TAB ID HERE (Important!!!)
-
-    if (msg.type === "video_clicked") {
-        let video_link = msg.video_link;
-
-        chrome.tabs.create({
-            url: chrome.runtime.getURL("assets/confirmation.html") + "?video=" + encodeURIComponent(video_link)
+// Listen for increment messages
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "incrementTime") {
+        chrome.storage.local.get({youtubeTime: 0}, (data) => {
+            let newTime = data.youtubeTime + message.amount;
+            chrome.storage.local.set({youtubeTime: newTime}, () => {
+                console.log("Total YouTube usage time:", newTime, "seconds");
+            });
         });
-
-        setTimeout(()=>{
-            chrome.tabs.remove(tabId)
-        }, 500);
-
-    }
-});
-
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    const tabId = sender.tab?.id;  // <── GET TAB ID HERE (Important!!!)
-
-    if (msg.type === "close_shorts") {
-
-        setTimeout(()=>{
-            chrome.tabs.remove(tabId)
-        }, 500);
-
-    }
-});
-
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    const tabId = sender.tab?.id;  // <── GET TAB ID HERE (Important!!!)
-    if (msg.type === "url_changed") {
-        setTimeout(()=>{
-            chrome.tabs.reload(tabId)
-        }, 500);
     }
 });
